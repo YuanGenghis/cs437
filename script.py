@@ -1,12 +1,13 @@
 import picar_4wd as fc
 import time
 
-speed = 10
+SPEED = 10
+BASELINE_DIST = 37
 
 def main():
     while True:
         # 37 is the baseline distance; which seems to be 37cm
-        scan_list = fc.scan_step(37)
+        scan_list = fc.scan_step(BASELINE_DIST)
         if not scan_list:
             continue
 
@@ -21,14 +22,14 @@ def main():
         # The check for len(tmp) handles initializations
         if tmp != [2,2,2,2] and len(tmp) == 4:
             # When runs into an obstacle, the car will back up for 0.3s
-            fc.backward(speed)
+            fc.backward(SPEED)
             time.sleep(0.3)
 
             # Then turn right for 0.1s
-            fc.turn_right(speed)
+            fc.turn_right(SPEED)
             time.sleep(0.1)
         else:
-            fc.forward(speed)
+            fc.forward(SPEED)
 
 if __name__ == "__main__":
     try: 
