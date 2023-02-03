@@ -4,7 +4,7 @@ import numpy as np
 class PathSolver(AStar):
     """AStar solver for binary map generated from ultrasonic reading and speed reading"""
     def __init__(self, binary_map):
-        self.binary_map = binary_map
+        self.binary_map = binary_map.copy()
         self.width = self.binary_map.shape[1]
         self.height = self.binary_map.shape[0]
     
@@ -12,7 +12,7 @@ class PathSolver(AStar):
         """returns a list of coordinates that form the shortest path from start to goal
            start and goal are (x,y) tuples"""
         path = self.astar(start, goal)
-        return path
+        return [n for n in path]
 
     def heuristic_cost_estimate(self, n1, n2):
         """computes the 'direct' distance between two (x,y) tuples"""
