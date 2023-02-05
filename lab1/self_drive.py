@@ -21,7 +21,7 @@ ultrasonic_servo_offset = int(config.get('ultrasonic_servo_offset', default_valu
 us = Ultrasonic(Pin('D8'), Pin('D9'))
 servo = Servo(PWM("P0"), offset=ultrasonic_servo_offset)
 
-side_length = 200
+side_length = 100
 RES = 5
 
 from pathsolver import PathSolver
@@ -88,6 +88,8 @@ class AutoPilot(object):
         self.cur_x += x_increment
         self.cur_y += y_increment
 
+        time.sleep(0.4)
+
     def backward(self):
         # Move 15 cm backward
         fc.backward(20)
@@ -99,6 +101,8 @@ class AutoPilot(object):
 
         self.cur_x -= x_increment
         self.cur_y -= y_increment
+
+        time.sleep(0.4)
     
     def turn_right(self):
         # turn right for 90 degrees
@@ -108,6 +112,8 @@ class AutoPilot(object):
 
         self.cur_theta -= 90
         self.cur_theta = self.cur_theta % 360
+
+        time.sleep(0.4)
     
     def turn_left(self):
         # turn left for 90 degrees
@@ -117,6 +123,8 @@ class AutoPilot(object):
 
         self.cur_theta += 90
         self.cur_theta = self.cur_theta % 360
+
+        time.sleep(0.4)
     
     def get_map_viz(self):
         ret = np.zeros((self.height, self.width, 3), dtype=np.uint8)
@@ -134,10 +142,11 @@ class AutoPilot(object):
     def get_path(self, start, goal):
         solver = PathSolver(self.map)
         return solver.solve_for_path(start, goal)
-
+import cv2
 if __name__ == '__main__':
     my_pilot = AutoPilot(side_length, side_length)
 
+    # 30, 95
     goal = (side_length // 2 - 100 // RES, side_length // 2 + 225 // RES)
 
     for i in range(100):
@@ -168,20 +177,27 @@ if __name__ == '__main__':
         
         # Turn if necessary
         if cur_theta != target_theta:
+            print(path[:2])
+            print(f"tar: {target_theta} cur: {cur_theta}")
             if (target_theta - cur_theta) % 360 == 90:
                 my_pilot.turn_left()
+            elif (cur_theta - target_theta) % 360 == 270:
+                my_pilot.turn_right()
             else:
-                while cur_theta != target_theta:
-                    my_pilot.turn_right()
+                my_pilot.turn_right()
+                my_pilot.turn_right()
         
         # Move forward
         my_pilot.forward()
 
+        viz_map = my_pilot.get_map_viz_with_path(path)
+        cv2.imshow('viz', viz_map)
+        cv2.waitKey(1)
 
     # for i in range(5):
     #     my_pilot.forward()
     #     my_pilot.set_surrounding()
 
-    viz_map = my_pilot.get_map_viz()
-    plt.imshow(viz_map)
-    plt.show()
+    # viz_map = my_pilot.get_map_viz()
+    #plt.imshow(viz_map)
+    #plt.show()
