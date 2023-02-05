@@ -32,8 +32,8 @@ class AutoPilot(object):
         self.height = height
         self.map = np.zeros((self.height, self.width), dtype=np.uint8)
 
-        self.cur_x = 0
-        self.cur_y = 0
+        self.cur_x = (side_length // 2) * RES
+        self.cur_y = (side_length // 2) * RES
 
         # counter-clockwise is positive
         self.cur_theta = 0
@@ -59,10 +59,6 @@ class AutoPilot(object):
         x = x + self.cur_x
         y = y + self.cur_y
 
-        # set middle as the origin
-        x = x + side_length // 2
-        y = y + side_length // 2
-
         if 0 <= x < side_length and 0 <= y < side_length:
             self.map[y // RES][x // RES] = 1
     
@@ -77,11 +73,11 @@ class AutoPilot(object):
     def forward(self):
         # Move 15 cm forward
         fc.forward(20)
-        time.skeep(0.5)
+        time.sleep(0.5)
         fc.stop()
         
-        x_increment = round(15 * np.sin(np.deg2rad(self.cur_theta)))
-        y_increment = round(15 * np.cos(np.deg2rad(self.cur_theta)))
+        x_increment = round((15 // RES) * np.sin(np.deg2rad(self.cur_theta)))
+        y_increment = round((15 // RES) * np.cos(np.deg2rad(self.cur_theta)))
 
         self.cur_x += x_increment
         self.cur_y += y_increment
@@ -127,3 +123,7 @@ if __name__ == '__main__':
     for i in range(5):
         my_pilot.forward()
         my_pilot.set_surrounding()
+
+    viz_map = my_pilot.get_map_viz()
+    plt.imshow(viz_map)
+    plt.show()
