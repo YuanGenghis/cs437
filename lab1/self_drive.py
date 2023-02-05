@@ -37,6 +37,9 @@ class AutoPilot(object):
 
         # counter-clockwise is positive
         self.cur_theta = 0
+    
+    def get_position(self):
+        return (self.cur_x, self.cur_y, self.cur_theta)
         
     def scan_surrounding(self):
         dis = []
@@ -59,8 +62,11 @@ class AutoPilot(object):
         x = x + self.cur_x
         y = y + self.cur_y
 
-        if 0 <= x < side_length and 0 <= y < side_length:
-            self.map[y][x] = 1
+        EPS = 2
+        for t_y in range(y - EPS, y + EPS + 1):
+            for t_x in range(x - EPS, x + EPS + 1):
+                if 0 <= t_x < side_length and 0 <= t_y < side_length:
+                    self.map[y][x] = 1
     
     def set_surrounding(self):
         obstacles = self.scan_surrounding()
@@ -95,15 +101,22 @@ class AutoPilot(object):
         self.cur_y -= y_increment
     
     def turn_right(self):
+        # turn right for 90 degrees
         fc.turn_right(20)
         time.sleep(1.325)
         fc.stop()
 
+        self.cur_theta -= 90
+        self.cur_theta = self.cur_theta % 360
     
     def turn_left(self):
+        # turn left for 90 degrees
         fc.turn_left(20)
         time.sleep(1.325)
         fc.stop()
+
+        self.cur_theta += 90
+        self.cur_theta = self.cur_theta % 360
     
     def get_map_viz(self):
         ret = np.zeros((self.height, self.width, 3), dtype=np.uint8)
@@ -125,9 +138,49 @@ class AutoPilot(object):
 if __name__ == '__main__':
     my_pilot = AutoPilot(side_length, side_length)
 
-    for i in range(5):
-        my_pilot.forward()
+    goal = (side_length // 2 - 100 // RES, side_length // 2 + 225 // RES)
+
+    for i in range(100):
         my_pilot.set_surrounding()
+        cur_x, cur_y, cur_theta = my_pilot.get_position()
+        if abs(cur_x - goal[0]) < 1 and abs(cur_y - goal[1]) < 1:
+            break
+        # navigate forward
+        path = my_pilot.get_path((cur_x, cur_y), goal)
+
+        cur_pos, next_pos = path[0], path[1]
+
+        # Get target theta
+        if next_pos[0] > cur_pos[0]:
+            target_theta = 90
+            assert next_pos[1] == cur_pos[1]
+        elif next_pos[0] < cur_pos[0]:
+            target_theta = 270
+            assert next_pos[1] == cur_pos[1]
+        elif next_pos[1] > cur_pos[1]:
+            target_theta = 0
+            assert next_pos[0] == cur_pos[0]
+        elif next_pos[1] < cur_pos[1]:
+            target_theta = 180
+            assert next_pos[0] == cur_pos[0]
+        else:
+            raise Exception("Invalid path")
+        
+        # Turn if necessary
+        if cur_theta != target_theta:
+            if (target_theta - cur_theta) % 360 == 90:
+                my_pilot.turn_left()
+            else:
+                while cur_theta != target_theta:
+                    my_pilot.turn_right()
+        
+        # Move forward
+        my_pilot.forward()
+
+
+    # for i in range(5):
+    #     my_pilot.forward()
+    #     my_pilot.set_surrounding()
 
     viz_map = my_pilot.get_map_viz()
     plt.imshow(viz_map)
