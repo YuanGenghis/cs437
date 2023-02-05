@@ -27,11 +27,14 @@ class YOLODetector:
     def get_latest_prediction_viz(self):
         assert self.valid
         viz = self.img_np.copy()
-
-        for i in range(len(self.conf_arr)):
-            if self.conf_arr[i] > 0.5:
-                viz = cv2.rectangle(viz, (self.bbox_arr[i][0], self.bbox_arr[i][1]), (self.bbox_arr[i][2], self.bbox_arr[i][3]), (0, 255, 0), 2)
-                viz = cv2.putText(viz, self.name_arr[i], (self.bbox_arr[i][0], self.bbox_arr[i][1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+        
+        conf_tmp = self.conf_arr
+        bbox_tmp = self.bbox_arr
+        name_tmp = self.name_arr
+        for i in range(len(conf_tmp)):
+            if conf_tmp[i] > 0.5:
+                viz = cv2.rectangle(viz, (bbox_tmp[i][0], bbox_tmp[i][1]), (bbox_tmp[i][2], bbox_tmp[i][3]), (0, 255, 0), 2)
+                viz = cv2.putText(viz, name_tmp[i], (bbox_tmp[i][0], bbox_tmp[i][1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
         return viz
 

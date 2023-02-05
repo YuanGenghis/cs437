@@ -181,7 +181,7 @@ if __name__ == '__main__':
             print(f"tar: {target_theta} cur: {cur_theta}")
             if (target_theta - cur_theta) % 360 == 90:
                 my_pilot.turn_left()
-            elif (cur_theta - target_theta) % 360 == 270:
+            elif (target_theta - cur_theta) % 360 == 270:
                 my_pilot.turn_right()
             else:
                 my_pilot.turn_right()
@@ -191,6 +191,7 @@ if __name__ == '__main__':
         my_pilot.forward()
 
         cur_x, cur_y, cur_theta = my_pilot.get_position()
+        print(f"x: {cur_x} y: {cur_y} t: {cur_theta}")
         assert (cur_x, cur_y) == next_pos
 
         viz_map = my_pilot.get_map_viz_with_path(path)
