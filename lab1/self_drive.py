@@ -32,8 +32,8 @@ class AutoPilot(object):
         self.height = height
         self.map = np.zeros((self.height, self.width), dtype=np.uint8)
 
-        self.cur_x = (side_length // 2) * RES
-        self.cur_y = (side_length // 2) * RES
+        self.cur_x = (side_length // 2)
+        self.cur_y = (side_length // 2)
 
         # counter-clockwise is positive
         self.cur_theta = 0
@@ -53,14 +53,14 @@ class AutoPilot(object):
 
     def set_obstacle(self, obs):
         radians = np.deg2rad(obs[0]) + np.deg2rad(self.cur_theta)
-        x = round(obs[1] * np.sin(radians))
-        y = round(obs[1] * np.cos(radians))
+        x = round(obs[1] * np.sin(radians) / RES)
+        y = round(obs[1] * np.cos(radians) / RES)
 
         x = x + self.cur_x
         y = y + self.cur_y
 
         if 0 <= x < side_length and 0 <= y < side_length:
-            self.map[y // RES][x // RES] = 1
+            self.map[y][x] = 1
     
     def set_surrounding(self):
         obstacles = self.scan_surrounding()
@@ -76,8 +76,8 @@ class AutoPilot(object):
         time.sleep(0.5)
         fc.stop()
         
-        x_increment = round((15 // RES) * np.sin(np.deg2rad(self.cur_theta)))
-        y_increment = round((15 // RES) * np.cos(np.deg2rad(self.cur_theta)))
+        x_increment = round(15 * np.sin(np.deg2rad(self.cur_theta)) / RES)
+        y_increment = round(15 * np.cos(np.deg2rad(self.cur_theta)) / RES)
 
         self.cur_x += x_increment
         self.cur_y += y_increment
@@ -88,8 +88,8 @@ class AutoPilot(object):
         time.sleep(0.5)
         fc.stop()
 
-        x_increment = round(15 * np.sin(np.deg2rad(self.cur_theta)))
-        y_increment = round(15 * np.cos(np.deg2rad(self.cur_theta)))
+        x_increment = round(15 * np.sin(np.deg2rad(self.cur_theta)) / RES)
+        y_increment = round(15 * np.cos(np.deg2rad(self.cur_theta)) / RES)
 
         self.cur_x -= x_increment
         self.cur_y -= y_increment
