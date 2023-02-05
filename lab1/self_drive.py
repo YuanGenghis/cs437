@@ -22,7 +22,7 @@ us = Ultrasonic(Pin('D8'), Pin('D9'))
 servo = Servo(PWM("P0"), offset=ultrasonic_servo_offset)
 
 side_length = 100
-RES = 5
+RES = 15
 
 from pathsolver import PathSolver
 
@@ -189,6 +189,9 @@ if __name__ == '__main__':
         
         # Move forward
         my_pilot.forward()
+
+        cur_x, cur_y, cur_theta = my_pilot.get_position()
+        assert (cur_x, cur_y) == next_pos
 
         viz_map = my_pilot.get_map_viz_with_path(path)
         cv2.imshow('viz', viz_map)
