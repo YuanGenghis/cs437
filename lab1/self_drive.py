@@ -95,10 +95,15 @@ class AutoPilot(object):
         self.cur_y -= y_increment
     
     def turn_right(self):
-        raise NotImplementedError
+        fc.turn_right(20)
+        time.sleep(1.325)
+        fc.stop()
+
     
     def turn_left(self):
-        raise NotImplementedError
+        fc.turn_left(20)
+        time.sleep(1.325)
+        fc.stop()
     
     def get_map_viz(self):
         ret = np.zeros((self.height, self.width, 3), dtype=np.uint8)
