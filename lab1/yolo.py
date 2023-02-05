@@ -21,16 +21,21 @@ class YOLODetector:
         return self.valid
     
     def get_latest_seen_objects(self):
+        self.buffer_lock.acquire()
         assert self.valid
-        return list(self.name_arr)
+        ret = self.name_arr.copy()
+        self.buffer_lock.release()
+        return list(ret)
 
     def get_latest_prediction_viz(self):
         assert self.valid
+
+        self.buffer_lock.acquire()
         viz = self.img_np.copy()
-        
-        conf_tmp = self.conf_arr
-        bbox_tmp = self.bbox_arr
-        name_tmp = self.name_arr
+        conf_tmp = self.conf_arr.copy()
+        bbox_tmp = self.bbox_arr.copy()
+        name_tmp = self.name_arr.copy()
+        self.buffer_lock.release()
         for i in range(len(conf_tmp)):
             if conf_tmp[i] > 0.5:
                 viz = cv2.rectangle(viz, (bbox_tmp[i][0], bbox_tmp[i][1]), (bbox_tmp[i][2], bbox_tmp[i][3]), (0, 255, 0), 2)
@@ -52,10 +57,10 @@ class YOLODetector:
 
                 # Update shared storage
                 self.buffer_lock.acquire()
-                self.img_np = img_np
-                self.conf_arr = conf_arr
-                self.bbox_arr = bbox_arr
-                self.name_arr = name_arr
+                self.img_np = img_np.copy()
+                self.conf_arr = conf_arr.copy()
+                self.bbox_arr = bbox_arr.copy()
+                self.name_arr = name_arr.copy()
                 if not self.valid:
                     self.valid = True
                 self.buffer_lock.release()

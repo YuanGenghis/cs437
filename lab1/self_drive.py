@@ -11,6 +11,9 @@ from picar_4wd.utils import *
 import picar_4wd as fc
 import time
 
+import cv2
+from yolo import YOLODetector
+
 config = FileDB("config")
 left_front_reverse = config.get('left_front_reverse', default_value = False)
 right_front_reverse = config.get('right_front_reverse', default_value = False)
@@ -142,14 +145,25 @@ class AutoPilot(object):
     def get_path(self, start, goal):
         solver = PathSolver(self.map)
         return solver.solve_for_path(start, goal)
-import cv2
+
 if __name__ == '__main__':
     my_pilot = AutoPilot(side_length, side_length)
+    my_detector = YOLODetector()
 
     # 30, 95
     goal = (side_length // 2 - 100 // RES, side_length // 2 + 225 // RES)
 
-    for i in range(100):
+    while True:
+        if my_detector.is_valid():
+            obj_list = my_detector.get_latest_seen_objects()
+            viz = my_detector.get_latest_prediction_viz()
+            viz = cv2.cvtColor(viz, cv2.COLOR_BGR2RGB)
+            cv2.imshow('YOLO', viz)
+
+            if 'stop sign' in obj_list:
+                time.sleep(3)
+                continue
+
         my_pilot.set_surrounding()
         cur_x, cur_y, cur_theta = my_pilot.get_position()
         if abs(cur_x - goal[0]) < 1 and abs(cur_y - goal[1]) < 1:
@@ -197,11 +211,3 @@ if __name__ == '__main__':
         viz_map = my_pilot.get_map_viz_with_path(path)
         cv2.imshow('viz', viz_map)
         cv2.waitKey(1)
-
-    # for i in range(5):
-    #     my_pilot.forward()
-    #     my_pilot.set_surrounding()
-
-    # viz_map = my_pilot.get_map_viz()
-    #plt.imshow(viz_map)
-    #plt.show()
