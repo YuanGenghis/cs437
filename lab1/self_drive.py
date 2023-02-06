@@ -45,6 +45,8 @@ class AutoPilot(object):
         return (self.cur_x, self.cur_y, self.cur_theta)
         
     def scan_surrounding(self):
+        # Scan the surrounding area and return a list of (angle, distance) tuples
+        # representing the obstacles
         dis = []
         for angle in range(-60, 60, 10):
             servo.set_angle(angle)
@@ -58,6 +60,7 @@ class AutoPilot(object):
         return dis
 
     def set_obstacle(self, obs):
+        # Transform to map coordinates using current position and orientation
         radians = np.deg2rad(obs[0]) + np.deg2rad(self.cur_theta)
         x = round(obs[1] * np.sin(radians) / RES)
         y = round(obs[1] * np.cos(radians) / RES)
@@ -65,6 +68,7 @@ class AutoPilot(object):
         x = x + self.cur_x
         y = y + self.cur_y
 
+        # Set the obstacle in the map with a radius of EPS
         EPS = 2
         for t_y in range(y - EPS, y + EPS + 1):
             for t_x in range(x - EPS, x + EPS + 1):
@@ -72,6 +76,7 @@ class AutoPilot(object):
                     self.map[y][x] = 1
     
     def set_surrounding(self):
+        # Scan the surrounding area and set the obstacles in the map
         obstacles = self.scan_surrounding()
         for obs in obstacles:
             self.set_obstacle(obs)
@@ -130,12 +135,14 @@ class AutoPilot(object):
         time.sleep(0.4)
     
     def get_map_viz(self):
+        # Return a visualization of the map
         ret = np.zeros((self.height, self.width, 3), dtype=np.uint8)
         ret[self.map == 1] = (255, 0, 0) # RED for obstacle
         ret[self.map == 2] = (0, 255, 0) # GREEN for car
         return ret
     
     def get_map_viz_with_path(self, path):
+        # Return a visualization of the map with the path drawn
         viz = self.get_map_viz()
         for i in range(len(path) - 1):
             x, y = path[i]
@@ -143,6 +150,7 @@ class AutoPilot(object):
         return viz
 
     def get_path(self, start, goal):
+        # Calls the A* algorithm to get the path
         solver = PathSolver(self.map)
         return solver.solve_for_path(start, goal)
 
@@ -160,15 +168,20 @@ if __name__ == '__main__':
             viz = cv2.cvtColor(viz, cv2.COLOR_BGR2RGB)
             cv2.imshow('YOLO', viz)
 
+            # If it sees a stop sign, stop
             if 'stop sign' in obj_list:
                 time.sleep(3)
                 continue
 
+        # Scan with ultrasonic sensor and update map
         my_pilot.set_surrounding()
         cur_x, cur_y, cur_theta = my_pilot.get_position()
+
+        # If it is close enough to the goal, stop
         if abs(cur_x - goal[0]) < 1 and abs(cur_y - goal[1]) < 1:
             break
-        # navigate forward
+
+        # Compute path from current position to goal
         path = my_pilot.get_path((cur_x, cur_y), goal)
 
         cur_pos, next_pos = path[0], path[1]
@@ -208,6 +221,7 @@ if __name__ == '__main__':
         print(f"x: {cur_x} y: {cur_y} t: {cur_theta}")
         assert (cur_x, cur_y) == next_pos
 
+        # Visualize map
         viz_map = my_pilot.get_map_viz_with_path(path)
         cv2.imshow('viz', viz_map)
         cv2.waitKey(1)
