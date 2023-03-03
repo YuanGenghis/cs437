@@ -1,15 +1,17 @@
 {
-  "name": "ours",
+  "name": "tutorial",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "electron": "^23.1.2"
-  }
+  "devDependencies": {
+    "electron": "^10.4.7"
+  },
+  "dependencies": {},
+  "description": ""
 }
