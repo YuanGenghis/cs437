@@ -3,17 +3,16 @@ document.onkeyup = resetKey;
 
 var server_port = 65432;
 var server_addr = "127.0.0.1";   // the IP address of your Raspberry PI
+var current_message = "NA";
 
 function client(){
-    
     const net = require('net');
-    var input = document.getElementById("message").value;
 
     const client = net.createConnection({ port: server_port, host: server_addr }, () => {
         // 'connect' listener.
         console.log('connected to server!');
         // send the message
-        client.write(`${input}\r\n`);
+        client.write(`${current_message}\r\n`);
     });
     
     // get the data from the server
@@ -66,7 +65,6 @@ function updateKey(e) {
 
 // reset the key to the start state 
 function resetKey(e) {
-
     e = e || window.event;
 
     document.getElementById("upArrow").style.color = "grey";
@@ -76,9 +74,6 @@ function resetKey(e) {
 }
 
 // update data for every 50ms
-function update_data(){
-    setInterval(function(){
-        // get image from python server
-        client();
-    }, 50);
+function update_data_from_textbox(){
+    current_message = document.getElementById("message").value;
 }

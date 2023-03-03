@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script src="./index.js"></script>
+
+    <script>
+        setInterval(function(){
+            client();
+        }, 1000);
+    </script>
     
   </head>
 
@@ -44,7 +50,7 @@
 
         <div class="jumbotron text-left col-md-6">
         <input id="message" type="text" placeholder="message to Pi"/>
-        <button class="btn btn-success" onclick="update_data()">Sumbit</button>
+        <button class="btn btn-success" onclick="update_data_from_textbox()">Sumbit</button>
           <p>
             <span id="direction_dot" style="color:Green">&bull;</span> Car Direction: <span id="direction"> </span>
            <br>
