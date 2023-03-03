@@ -3,9 +3,9 @@ document.onkeyup = resetKey;
 
 var server_port = 65432;
 var server_addr = "127.0.0.1";   // the IP address of your Raspberry PI
-var current_message = "NA";
+var current_message = "STOP";
 
-function client(){
+function client_update_one(){
     const net = require('net');
 
     const client = net.createConnection({ port: server_port, host: server_addr }, () => {
@@ -38,28 +38,27 @@ function client(){
 
 // for detecting which key is been pressed w,a,s,d
 function updateKey(e) {
-
     e = e || window.event;
 
     if (e.keyCode == '87') {
         // up (w)
         document.getElementById("upArrow").style.color = "green";
-        send_data("87");
+        forward();
     }
     else if (e.keyCode == '83') {
         // down (s)
         document.getElementById("downArrow").style.color = "green";
-        send_data("83");
+        backward();
     }
     else if (e.keyCode == '65') {
         // left (a)
         document.getElementById("leftArrow").style.color = "green";
-        send_data("65");
+        left();
     }
     else if (e.keyCode == '68') {
         // right (d)
         document.getElementById("rightArrow").style.color = "green";
-        send_data("68");
+        right();
     }
 }
 
@@ -71,9 +70,31 @@ function resetKey(e) {
     document.getElementById("downArrow").style.color = "grey";
     document.getElementById("leftArrow").style.color = "grey";
     document.getElementById("rightArrow").style.color = "grey";
+
+    stop();
 }
 
 // update data for every 50ms
 function update_data_from_textbox(){
     current_message = document.getElementById("message").value;
+}
+
+function forward() {
+    current_message = "FORWARD";
+}
+
+function backward() {
+    current_message = "BACKWARD";
+}
+
+function left() {
+    current_message = "LEFT";
+}
+
+function right() {
+    current_message = "RIGHT";
+}
+
+function stop() {
+    current_message = "STOP";
 }
