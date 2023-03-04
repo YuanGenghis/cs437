@@ -25,6 +25,8 @@ function client_update_one(){
         document.getElementById("direction").innerHTML = data[0];
         // second item is car speed
         document.getElementById("speed").innerHTML = data[1];
+        // third item is temperature of PI
+        document.getElementById("temperature").innerHTML = data[2];
         client.end();
         client.destroy();
     });
