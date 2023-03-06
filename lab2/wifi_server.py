@@ -1,7 +1,10 @@
 import socket
 import threading
+import picar_4wd as fc
+import time
+import psutil
 
-HOST = "127.0.0.1" # IP address of your Raspberry PI
+HOST = "192.168.10.35" # IP address of your Raspberry PI
 PORT = 65432          # Port to listen on (non-privileged ports are > 1023)
 
 valid_commands = [
@@ -15,7 +18,11 @@ valid_commands = [
 class car_commander(object):
     def __init__(self) -> None:
         self.command = 'STOP'
+        self.speed = 0
         self.command_lock = threading.Lock()
+      
+    def get_speed(self):
+        return self.speed
 
     def get_current_move_command(self):
         with self.command_lock:
@@ -23,9 +30,24 @@ class car_commander(object):
         return ret
     
     def set_current_move_command(self, command):
-        assert command in valid_commands
-        with self.command_lock:
-            self.command = command
+        self.command = command
+        self.speed = 20
+        if self.command == 'FORWARD':
+            fc.forward(self.speed)
+        elif self.command == 'BACKWARD':
+            fc.backward(self.speed)
+        elif self.command == 'RIGHT':
+            fc.turn_right(self.speed)
+        elif self.command == 'LEFT':
+            fc.turn_left(self.speed)
+        elif self.command == 'STOP':
+            self.speed = 0
+            fc.stop()
+        else:
+            self.speed = 0
+            fc.stop()
+        
+            
 
 my_car = car_commander()
 
@@ -33,10 +55,13 @@ def get_current_move_command():
     return my_car.get_current_move_command()
 
 def get_current_speed():
-    return 123 # TODO: implement this!
+    return my_car.get_speed() # TODO: implement this!
 
 def get_temperature():
-    return 123 # TODO: implement this!
+    temp_val = psutil.sensors_temperatures()['cpu_thermal'][0].current
+    print(temp_val)
+
+    return temp_val # TODO: implement this!
 
 def process_package(data):
     data = data.decode().strip()   # decode the binary message to string
@@ -71,7 +96,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 print("Sending data:")
                 print(ret_packet)
                 client.sendall(ret_packet)
-    except: 
+    except E:
+        print(E) 
         print("Closing socket")
         client.close()
         s.close()    
