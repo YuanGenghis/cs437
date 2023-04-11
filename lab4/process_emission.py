@@ -1,9 +1,10 @@
 import json
 import logging
 import sys
-import pandas as pd
 
 import greengrasssdk
+
+co2_maxes = {}
 
 # Logging
 logger = logging.getLogger(__name__)
@@ -13,51 +14,27 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 client = greengrasssdk.client("iot-data")
 
 # Counter
-my_counter = 0
-def lambda_handler(event, context):
-    global my_counter
-    global max_co2_emission
-    #TODO1: Get your data
-    data_folder = "data2"
-    vehicle_files = [f"{data_folder}/vehicle{i}.csv" for i in range(0, 4)]
-    for file in vehicle_files:
-        data = pd.read_csv(file)
-        for index, row in data.iterrows():
-            co2_emission = row["vehicle_CO2"]
 
-            # Send the CO2 emission data to the cloud
-            client.publish(
-                topic=f"vehicle_emissions/{file}",
-                payload=json.dumps({"vehicle_CO2": co2_emission}),
-            )
+def lambda_handler(event, context):
+    global co2_maxes
+
+    #TODO1: Get your data
+    vehicle_id = event['vehicle_id']
+    co2_level = event['vehicle_CO2']
+
+    print(vehicle_id)
+    print(type(vehicle_id))
+
+    topic = f'max/co2/{vehicle_id}'
 
     #TODO2: Calculate max CO2 emission
-    max_co2_emission_topic = "max/co2/emission"
-    max_co2_emissions = []
-
-    def on_message_received(topic, payload):
-        nonlocal max_co2_emissions
-        max_co2_emission = json.loads(payload)["max_vehicle_CO2"]
-        max_co2_emissions.append(max_co2_emission)
-
-    # Subscribe to the topic to receive max CO2 emission values
-    client.subscribe(
-        topic=max_co2_emission_topic,
-        callback=on_message_received,
-    )
-
-
-    #TODO3: Return the result
-    result = {
-        "message": f"Hello world! Sent from Greengrass Core. Invocation Count: {my_counter}",
-        "max_CO2_emissions": max_co2_emissions,
-    }
-
-    client.publish(
-        topic="hello/world/counter",
-        payload=json.dumps(result),
-    )
-
-    my_counter += 1
-
-    return
+    current_max = co2_maxes.get(vehicle_id, "nil") 
+    if current_max == 'nil' or co2_level > current_max:
+        co2_maxes[vehicle_id] = co2_level
+        message = {"max_co2": co2_level}
+        messageJson = json.dumps(message)
+        print(f'{vehicle_id}: New max {co2_level} more than {current_max}')
+        client.publish(topic=topic,payload=messageJson)
+        print('Published topic %s: %s\n' % (topic, messageJson))
+    else:
+        print(f'{vehicle_id}: {current_max} more than {co2_level}')

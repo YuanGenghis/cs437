@@ -113,7 +113,7 @@ class MQTTClient:
     def publish(self, Payload="payload"):
 
         # Subscribe to the topic
-        self.client.subscribeAsync("co2/emission", 1, ackCallback=self.customSubackCallback)
+        self.client.subscribeAsync("max/co2/4", 1, ackCallback=self.customSubackCallback)
 
         # send vehivle 0 data
         # for obj in data_json_vehicle0:
@@ -138,7 +138,7 @@ class MQTTClient:
         # send vehivle 4 data
         for obj in data_json_vehicle4:
             # Publish the JSON-formatted message
-            self.client.publishAsync("co2/emission", json.dumps(obj), 1, ackCallback=self.customPubackCallback)
+            self.client.publishAsync("max/co2/4", json.dumps(obj), 1, ackCallback=self.customPubackCallback)
 
         print('Published')
 
@@ -159,11 +159,6 @@ for device_id in range(device_st, device_end):
  
 
 while True:
-    # print(data_json_vehicle0)
-    # for obj in data_json_vehicle0:
-    #     tmp = json.dumps(obj)
-    #     print(tmp)
-    #     print(type(tmp))
     print("send now?")
     x = input()
     if x == "s":
